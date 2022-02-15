@@ -1,0 +1,179 @@
+Lombok은 반복적인 Getter/Setter, ToString과 같은 반복적인 자바 코드를 컴파일할 때 자동으로 생성해주는 라이브러리 이다. 밑은 자주 사용하는 롬복 라이브러리를 모아 두었다.
+
+- @Getter/Setter
+    - 코드를 컴파일할 때 속성들에 대한 Getter/Setter 메소드를 생성
+- @ToString
+    - toString() 메소드 생성
+    - toString() 메소드 설명 토글
+
+        객체가 가지고 있는 정보나 값들을 문자열로 만들어 리턴하는 메소드
+
+- @ToString(exclude={”변수명})
+    - 원하지 않는 속성을 제외한 toString() 메소드 생성
+- @NonNull
+    - 해당 변수가 null 체크, NullPointerException 예외 발생
+- @EqualsAndHashCode
+    - equals() 와 hashCode() 메소드 생성
+    - equals() 와 hashCode() 설명 토글
+
+        **equals()**
+
+        두 객체의 `내용이 같은지` 확인하는 Method입니다.
+
+        hashCode()
+
+        두 객체가 `같은 객체인지` 확인하는 Method입니다.
+
+- @Builder
+    - 빌더 패턴을 이용한 객체 생성
+    - 빌더 패턴 설명 토글
+
+        **Builder 패턴**은 인스턴스를 생성할 때 생성자(Constructor)만을 통해서 생성하는데는 어려움이 있어서 고안된 패턴이다. 클래스에 생성자 인자가 많다면 Builder 패턴을 사용하면 좋다. 왜냐하면 생성자 인자가 너무 많다면 어떠한 인자가 어떠한 값을 나타내는지 알기 어렵기 때문이다. 코드를 보면서 이해해보자.
+
+        ```
+        publicclassUser {
+        privateint userIdx;   // 선택
+        private String name;   // 필수
+        private String part;   // 필수
+        privateint age;       // 선택
+        private String email;  // 선택
+        }
+        ```
+
+        위와 같은 User 클래스에서 필수적으로 받아야 하는 정보, 선택적으로 받아야 하는 정보가 있다고 가정하자. 빌더 패턴을 사용하지 않는다면 일반적으로 **점층적 생성자 패턴**을 적용한다. **점층적 생성자 패턴**이란 필수 인자만 받는 생성자를 만들고, 선택적으로 받는 값의 생성자를 만드는 것이다. (다시 말하면, 오버로딩(Overloading)을 통해서 생성자를 여러 개 만드는 것을 의미한다)
+
+        ```
+        publicclassUser {
+        privateint userIdx;
+        private String name;
+        private String part;
+        privateint age;
+        private String email;
+
+        publicUser(String name, String part) {
+        this.name = name;
+        this.part = part;
+            }
+
+        publicUser(int userIdx,int age, String email) {
+        this.userIdx = userIdx;
+        this.age = age;
+        this.email = email;
+            }
+        }
+        ```
+
+        하지만 위와 같이 점층적 생성자 패턴을 사용하게 되면 코드가 길어지고, 지져분해지는 단점이 있다.
+
+        ```
+        User user =new User(1, "이름", "파트", 25, "이메일");
+        ```
+
+        그리고 위와 같이 작성하다 보면 실수로 순서를 바꿔서 넣을수도 있고, 위에서 생성자 인자가 많을 때 알아보기 힘들다는 점이 이러한 상황이다. 나중에 코드를 읽을 때 위의 코드를 보고 어떤 필드에 값을 넣은건지 한번에 알아보기가 힘들고 궁금하다면 해당 클래스를 찾아가 생성자를 확인해보아야한다. 또한 인자가 더 많아지면 길이가 길어져 작성하기 불편하는 점도 존재한다.
+
+        그래서 이러한 단점을 보완하기 위해 setter 메소드를 사용한 **자바 빈(Bean) 패턴**이 고안되었다.
+
+        ```
+        publicstaticvoidmain(String[] args) {
+           User user =new User();
+           user.setUserIdx(1);
+           user.setName("이름");
+           user.setPart("파트");
+           user.setAge(25);
+           user.setEmail("Builder@naver.com");
+        }
+        ```
+
+        가독성은 생성자를 사용한 것보다 좋아지고 객체를 생성하기도 쉬워졌지만, setter를 이용하여 객체를 생성하다 보니 함수 호출 1회로 객체를 생성할 수 없고(여러번 호출해야함) 객체 일관성(consistency)가 일시적으로 깨질 수 있다.(Getter, Setter 존재) 또한 immutable 객체를 생성할 수 없다. (객체가 변할 여지가 존재한다 => 쓰레드간의 공유 가능한 상태가 존재하가 때문)
+
+        따라서 생성자 패턴과 자바 빈 패턴의 장점을 결합한 것이 바로 **빌더 패턴**이다.
+
+        빌더 패턴은 필요한 객체를 직접생성하는 대신 먼저 필수 인자들을 생성자에 전부 전달하여 빌더 객체를 만든다. 그리고 선택인자는 가독성이 좋은 코드로 인자를 넘길 수 있다. 이러한 장점들을 갖고 있으면서도 객체 일관성을 깨지 않을 수 있다.
+
+        ```
+        publicclassUser {
+        privateint userIdx;    // 선택
+        private String name;    // 필수
+        private String part;    // 필수
+        privateint age;        // 선택
+        private String email;   // 선택
+
+        publicstaticclassBuilder {
+        privateint userIdx = 1;
+        private String name = "이름";
+        private String part = "서버";
+        privateint age = 25;
+        private String email = "Builder@naver.com";
+
+        publicBuilder(String name, String part) {
+        this.name = name;
+        this.part = part;
+               }
+
+        public BuilderuserIdx(int userIdx) {
+        this.userIdx = userIdx;
+        returnthis;
+               }
+        public Builderage(int age) {
+        this.age = age;
+        returnthis;
+               }
+
+        public Builderemail(String email) {
+        this.email = email;
+        returnthis;
+               }
+
+        public Userbuild() {
+        returnnew User(this);
+               }
+           }
+
+        publicUser(Builder builder) {
+        this.userIdx = builder.userIdx;
+        this.name = builder.name;
+        this.part = builder.part;
+        this.age = builder.age;
+        this.email = builder.email;
+           }
+
+        publicstaticvoidmain(String[] args) {
+                User user =new Builder("이름", "파트")
+                        .userIdx(1)
+                        .age(25)
+                        .email("Builder@naver.com")
+                        .build();
+            }
+        }
+        ```
+
+        User 클래스 안에 내부 static 클래스인 Builder가 존재하고 필수 값인 name, part로 이루어진 생성자를 만들었다.
+
+        **빌더 패턴**은 만들려는 객체를 바로 만들지 않고 클라이언트가 빌더(생성자 또는 static 팩토리)에 필수적인 매개변수를 주면서 호출해 Builder 객체를 얻은 다음 빌더 객체가 제공하는 세터와 비슷한 메소드를 사용해서 부가적인 필드를 채워넣고 최종적으로 build라는 메소드를 호출해서 만들려는 객체를 생성한다.
+
+        하지만 빌더 패턴도 역시 **단점**이 존재한다. 객체를 생성하려면 우선 빌더객체를 생성해야 하고, 다른 패턴들보다 많은 코드를 요구하기 때문에 인자가 충분히 많은 상황에서 이용할 필요가 있다.
+
+- @NoArgsConstructor
+    - 파라미터가 없는 기본 생성자
+- @AllArgsConstructor
+    - 모든 속성에 대한 생성자 생성
+- @RequiredArgsConstructor
+    - 초기화 되지않은 Final, @NonNull 어노테이션이 붙은 필드에 대한 생성자 생성
+- Log
+    - log 변수 자동 생성
+- @Value
+    - 불변(immutable) 클래스 성성
+    - 불변 클래스 설명 토글
+
+        Immutable을 사전적으로 찾아보면, **불변의, 변경할 수 없는 이라는 뜻**임을 알 수 있습니다.
+
+        사전적인 의미에서도 알 수 있듯이 Immutable은 변경이 불가합니다. **즉 Immutable Class는 변경이 불가능한 클래스이며, 가변적이지 않는 클래스입니다.** 만들어진 Immutable Class는 레퍼런스 타입의 객체이기 때문에 heap영역에 생성됩니다.
+
+        자바에서 이런 Immutable Class로 어떤 것들이 있을까요?
+
+        대표적으로 String, Boolean, Integer, Float, Long 등등이 있습니다. 이러한 Immutable Class들은 heap영역에서 변경불가능 한 것이지 재할당을 못하는 것은 아닙니다. 즉 String a = "aa"; 에서 a = "bb" 로 재할당이 가능합니다.  a가 참조하고 있는 heap영역의 객체가 바뀌는 것이지 heap영역에 있는 값이 바뀌는 것이 아닙니다.
+
+        좀 더 풀어말하면, a가 처음에 참조하고 있는 "aa"값이 "bb"로 변경되는 것이 아니라 아예 "bb"라는 새로운 객체를 만들고 그 객체를 a가 참조하게 하는 것입니다. 이렇게 했을 경우 "aa"값을 지니고있는 객체는 이제 그 누구도 참조하고 있지 않는 객체가 되며 gc대상이 됩니다.
+
+- @ Data
+    - @ToString, @EqualsAndHashCode, @Getter/Setter @RRequiredArg...를 합친 어노테이션
